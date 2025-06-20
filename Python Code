@@ -1,0 +1,116 @@
+from collections import defaultdict
+class Node:
+    def __init__(self, key, val):
+        self.key = key
+        self.val = val
+        self.freq = 1
+        self.prev = self.next = None
+class DoublyLinkedList:
+    def __init__(self):
+      
+        self.head = Node(None, None)
+        self.tail = Node(None, None)
+        self.head.next = self.tail
+        self.tail.prev = self.head
+        self.size = 0
+
+    def add_node_to_front(self, node: Node):
+        node.next = self.head.next
+        node.prev = self.head
+        self.head.next.prev = node
+        self.head.next = node
+        self.size += 1
+
+    def remove_node(self, node: Node):
+        node.prev.next = node.next
+        node.next.prev = node.prev
+        self.size -= 1
+    
+    def pop_tail(self) -> Node:
+        if self.size == 0:
+            return None
+        node_to_remove = self.tail.prev
+        self.remove_node(node_to_remove)
+        return node_to_remove
+
+class LFUCache:
+    def __init__(self, capacity: int):
+        self.capacity = capacity
+        self.size = 0
+        self.min_freq = 0
+        self.cache = {}
+        self.freq_groups = defaultdict(DoublyLinkedList)
+
+    def _update_node_freq(self, node: Node)
+
+        old_freq = node.freq
+        self.freq_groups[old_freq].remove_node(node)
+
+        if self.min_freq == old_freq and self.freq_groups[old_freq].size == 0:
+            self.min_freq += 1
+        node.freq += 1
+        self.freq_groups[node.freq].add_node_to_front(node)
+
+    def get(self, key: int) -> int:
+        if key not in self.cache:
+            return -1
+        
+        node = self.cache[key]
+        self._update_node_freq(node)
+        return node.val
+
+    def put(self, key: int, value: int) -> None:
+        if self.capacity == 0:
+            return
+
+        if key in self.cache:
+            node = self.cache[key]
+            node.val = value
+            self._update_node_freq(node)
+        else:
+            if self.size == self.capacity:
+                lfu_list = self.freq_groups[self.min_freq]
+                node_to_evict = lfu_list.pop_tail()
+                del self.cache[node_to_evict.key]
+                self.size -= 
+            new_node = Node(key, value)
+            self.cache[key] = new_node
+            self.freq_groups[1].add_node_to_front(new_node)
+            self.min_freq = 1
+            self.size += 1
+
+if __name__ == "__main__":
+    print("--- LFU Cache Demonstration ---")
+    lfu = LFUCache(2)
+    print("Cache created with capacity 2.\n")
+    lfu.put(1, 1)
+    print("put(1, 1)")
+    print(f"Cache state: {lfu.cache}")
+
+    lfu.put(2, 2)
+    print("put(2, 2)")
+    print(f"Cache state: {lfu.cache}")
+    val = lfu.get(1)
+    print(f"\nget(1) -> returns {val}") 
+    print(f"Node 1 freq: {lfu.cache[1].freq}") 
+    print(f"Node 2 freq: {lfu.cache[2].freq}") 
+    print(f"min_freq is now: {lfu.min_freq}") 
+    lfu.put(3, 3)
+    print("\nput(3, 3) -> Evicts key 2")
+    print(f"Cache state: {lfu.cache}") 
+    val = lfu.get(2)
+    print(f"get(2) -> returns {val}") 
+    val = lfu.get(3)
+    print(f"\nget(3) -> returns {val}") 
+    print(f"Node 1 freq: {lfu.cache[1].freq}") 
+    print(f"Node 3 freq: {lfu.cache[3].freq}") 
+    print(f"min_freq is now: {lfu.min_freq}") 
+    lfu.put(4, 4)
+    print("\nput(4, 4) -> Evicts key 1 (LRU among freq 2 items)")
+    print(f"Cache state: {lfu.cache}")
+    val = lfu.get(1)
+    print(f"get(1) -> returns {val}")
+    val = lfu.get(3)
+    print(f"get(3) -> returns {val}") 
+    val = lfu.get(4)
+    print(f"get(4) -> returns {val}") 
